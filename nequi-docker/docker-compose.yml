@@ -22,7 +22,8 @@ services:
     ports:
       - "8080:80"               # expone Snipe-IT en http://TU_IP:8080
     environment:
-      - APP_KEY=base64:LuJ53b8TJ8FVHAun4KLutVE72neXl6xq0wz8RyYh0iA=     # genera tu clave o déjalo en blanco y la auto-crea
+      - APP_KEY=base64:LuJ53b8TJ8FVHAun4KLutVE72neXl6xq0wz8RyYh0iA=
+      - APP_URL=http://localhost:8080
       - DB_CONNECTION=mysql
       - DB_HOST=snipe-mariadb
       - DB_DATABASE=snipeit
@@ -36,14 +37,16 @@ services:
 
   # ==== DUPLICATI ====
   duplicati:
-    build: ./duplicati
+    image: duplicati/duplicati:latest
     container_name: duplicati
     restart: unless-stopped
     ports:
-      - "8200:8200"             # http://TU_IP:8200
+      - "8200:8200"
     volumes:
       - duplicati_config:/config
       - duplicati_backups:/backups
+    environment:
+      - DUPLICATI__webservice__password=MiContraSuperSegura123!
 
   # ==== SNIPPET BOX ====
   snippetbox:
