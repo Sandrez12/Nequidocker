@@ -1,0 +1,64 @@
+services:
+  # ==== MariaDB para Snipe-IT ====
+  snipe-mariadb:
+    image: mariadb:10.6
+    container_name: snipe-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ChangeMeRoot!
+      MYSQL_DATABASE: snipeit
+      MYSQL_USER: snipeit
+      MYSQL_PASSWORD: ChangeMeSnipe!
+    volumes:
+      - snipe_db_data:/var/lib/mysql
+
+  # ==== Snipe-IT ====
+  snipeit:
+    image: snipe/snipe-it:latest
+    container_name: snipeit-app
+    depends_on:
+      - snipe-mariadb
+    restart: unless-stopped
+    ports:
+      - "8080:80"               # expone Snipe-IT en http://TU_IP:8080
+    environment:
+      - APP_KEY=base64:LuJ53b8TJ8FVHAun4KLutVE72neXl6xq0wz8RyYh0iA=     # genera tu clave o déjalo en blanco y la auto-crea
+      - DB_CONNECTION=mysql
+      - DB_HOST=snipe-mariadb
+      - DB_DATABASE=snipeit
+      - DB_USERNAME=snipeit
+      - DB_PASSWORD=ChangeMeSnipe!
+      - SNIPEIT_URL=http://localhost:8080
+      - SNIPEIT_EMAIL=admin@nequi.local
+      - SNIPEIT_ENABLE_EMAIL=false
+    volumes:
+      - snipe_uploads:/var/lib/snipe/uploads
+
+  # ==== DUPLICATI ====
+  duplicati:
+    build: ./duplicati
+    container_name: duplicati
+    restart: unless-stopped
+    ports:
+      - "8200:8200"             # http://TU_IP:8200
+    volumes:
+      - duplicati_config:/config
+      - duplicati_backups:/backups
+
+  # ==== SNIPPET BOX ====
+  snippetbox:
+    image: pawelmalak/snippet-box:latest
+    container_name: snippetbox
+    restart: unless-stopped
+    ports:
+      - "4000:5000"             # http://TU_IP:4000
+    volumes:
+      - ./snippetbox_data:/app/data
+
+
+volumes:
+  snipe_db_data:
+  snipe_uploads:
+  duplicati_config:
+  duplicati_backups:
+  snippetbox_data:
